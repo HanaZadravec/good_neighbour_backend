@@ -48,6 +48,23 @@ exports.loginUser = async (req, res, next) => {
     })
   };
 
-  exports.getUserDetails = async (req, res) => {
-    await res.json(req.userData);
+  exports.getUserDetails = (req, res, next) => {
+   let token= req.headers.token;
+   jwt.verify(token, 'secretkey', (err,decoded) =>{
+    if(err) return res.status(401),json({
+      title:'unathorized'
+    })
+    // token is valid
+    User.findOne({_id: decoded.userId}, (err,user)=>{
+      if(err) return console.log(err);
+      return res.status(200).json({
+        title:'user grabbed',
+        user:{
+          firstname: user.firstname,
+          lastname:user.lastname,
+          email:user.email
+        }
+      })
+    })
+   })
   };

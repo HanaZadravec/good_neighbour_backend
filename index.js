@@ -32,6 +32,9 @@ app.use(morgan("dev"));
 const userRoutes = require("./api/user/route/user");
 app.use(userRoutes);
 
+const crimeRoutes = require("./api/crime/route/crime");
+app.use(crimeRoutes);
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`);
