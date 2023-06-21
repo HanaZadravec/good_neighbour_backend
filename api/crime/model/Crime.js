@@ -23,7 +23,12 @@ const crimeSchema = mongoose.Schema({
   },
   crimeDate: {
     type: Date,
-    required: true,
+    required: true
+  },
+  crimeLevel: {
+    type: String,
+    enum: ['Low', 'Medium', 'High'], // Dodajte enum za razine (niska, srednja, visoka)
+    required: true
   }
 });
 

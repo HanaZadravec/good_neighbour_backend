@@ -4,21 +4,22 @@ const Notification = require("../model/Notification");
 const User=require("../../user/model/User");
 exports.createNewCrime = async (req, res, next) => {
   try {
-    const { reporterEmail, crimeTitle, crimeAddress, crimeCity, crimeDesc, crimeDate } = req.body;
+    const { reporterEmail, crimeTitle, crimeAddress, crimeCity, crimeDesc, crimeDate, crimeLevel } = req.body;
     const newCrime = new Crime({
       reporterEmail,
       crimeTitle,
-      crimeCity: crimeCity.toLowerCase(), 
+      crimeCity: crimeCity.toLowerCase(),
       crimeAddress,
       crimeDesc,
-      crimeDate
+      crimeDate,
+      crimeLevel,
     });
 
     await newCrime.save();
 
     const users = await User.find({ address: crimeCity.toLowerCase() });
 
-    const notifications = users.map(async user => {
+    const notifications = users.map(async (user) => {
       if (user.email !== reporterEmail) {
         const notification = new Notification({
           title: 'New Crime Alert',
@@ -27,11 +28,11 @@ exports.createNewCrime = async (req, res, next) => {
           status: 'unread',
           userId: user._id
         });
-      
+
         await notification.save();
       }
     });
-    
+
     await Promise.all(notifications);
 
     return res.status(200).json({ title: 'Crime created' });
@@ -40,6 +41,7 @@ exports.createNewCrime = async (req, res, next) => {
     return res.status(500).json({ error: 'Failed to create crime' });
   }
 };
+
 
 
 exports.getNotifications = async (req, res) => {
