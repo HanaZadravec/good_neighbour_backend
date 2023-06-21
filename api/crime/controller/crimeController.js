@@ -1,24 +1,85 @@
 const Crime = require("../model/Crime");
 const Comment=require("../model/Comment");
+const Notification = require("../model/Notification");
+const User=require("../../user/model/User");
 exports.createNewCrime = async (req, res, next) => {
+  try {
+    const { reporterEmail, crimeTitle, crimeAddress, crimeCity, crimeDesc, crimeDate } = req.body;
     const newCrime = new Crime({
-      reporterEmail: req.body.reporterEmail,
-      crimeTitle: req.body.crimeTitle,
-      crimeAddress: req.body.crimeAddress,
-      crimeCity: req.body.crimeCity,
-      crimeDesc: req.body.crimeDesc,
-      crimeDate: req.body.crimeDate
+      reporterEmail,
+      crimeTitle,
+      crimeCity: crimeCity.toLowerCase(), 
+      crimeAddress,
+      crimeDesc,
+      crimeDate
     });
-    console.log(newCrime);
-    newCrime.save(err =>{
-        if(err){
-          console.log(err);
-        }
-        return res.status(200).json({
-          title:"crime created"
-        })
-      });
-  };
+
+    await newCrime.save();
+
+    const users = await User.find({ address: crimeCity.toLowerCase() });
+
+    const notifications = users.map(async user => {
+      if (user.email !== reporterEmail) {
+        const notification = new Notification({
+          title: 'New Crime Alert',
+          description: `A new crime titled "${crimeTitle}" has been reported in ${crimeCity.charAt(0).toUpperCase() + crimeCity.slice(1).toLowerCase()}. Please stay vigilant.`,
+          address: crimeCity.toLowerCase(),
+          status: 'unread',
+          userId: user._id
+        });
+      
+        await notification.save();
+      }
+    });
+    
+    await Promise.all(notifications);
+
+    return res.status(200).json({ title: 'Crime created' });
+  } catch (error) {
+    console.error('Failed to create crime:', error);
+    return res.status(500).json({ error: 'Failed to create crime' });
+  }
+};
+
+
+exports.getNotifications = async (req, res) => {
+  try {
+    const city = req.params.city;
+    const userId = req.params.userId;
+
+    const notifications = await Notification.find({
+      address: city,
+      $or: [
+        { userId },
+        { userId: { $exists: false } }
+      ]
+    });
+
+    console.log(notifications);
+    res.status(200).json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+};
+
+exports.markAsRead = async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+
+    const notification = await Notification.findById(notificationId);
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+
+    notification.status = 'read';
+    await notification.save();
+
+    res.status(200).json({ message: 'Notification marked as read' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+};
+
 
 exports.getAllCrimes = async (req, res, next) => {
   try {
@@ -93,4 +154,5 @@ exports.getComments = async (req, res, next) => {
       res.status(500).json({ error: 'Failed to fetch replies' });
     }
   };
+  
   

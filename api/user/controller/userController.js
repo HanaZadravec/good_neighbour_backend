@@ -60,9 +60,11 @@ exports.loginUser = async (req, res, next) => {
       return res.status(200).json({
         title:'user grabbed',
         user:{
+          id:user._id,
           firstname: user.firstname,
           lastname:user.lastname,
-          email:user.email
+          email:user.email,
+          address:user.address
         }
       })
     })
