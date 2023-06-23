@@ -10,5 +10,7 @@ router.post('/comment/:commentId/reply', crimeController.postReply);
 router.get('/comment/:commentId/replies', crimeController.getReplies);
 router.get('/notifications/:city/:userId', crimeController.getNotifications);
 router.put('/notifications/:id', crimeController.markAsRead);
+router.delete('/comments/:id', crimeController.deleteComment);
+router.delete('/comments/:commentId/replies/:replyId', crimeController.deleteReply);
 
 module.exports = router;

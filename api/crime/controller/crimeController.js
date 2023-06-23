@@ -141,6 +141,29 @@ exports.getComments = async (req, res, next) => {
       res.status(500).json({ error: 'Failed to add reply' });
     }
   };
+  exports.deleteComment = (req, res, next) => {
+    Comment.findByIdAndDelete(req.params.id)
+      .then(() => {
+        res.status(200).json({ message: 'Comment deleted successfully' });
+      })
+      .catch((error) => {
+        res.status(500).json({ message: 'Failed to delete comment', error });
+      });
+  };
+  
+  exports.deleteReply = (req, res, next) => {
+    Comment.findByIdAndUpdate(
+      req.params.commentId,
+      { $pull: { replies: { _id: req.params.replyId } } },
+      { new: true }
+    )
+      .then((comment) => {
+        res.status(200).json({ message: 'Reply deleted successfully', comment });
+      })
+      .catch((error) => {
+        res.status(500).json({ message: 'Failed to delete reply', error });
+      });
+  };
   
   exports.getReplies = async (req, res, next) => {
     const { commentId } = req.params;

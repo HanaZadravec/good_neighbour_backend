@@ -35,6 +35,7 @@ const crimeRoutes = require("./api/crime/route/crime");
 app.use(crimeRoutes);
 
 
+
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`);
 });
