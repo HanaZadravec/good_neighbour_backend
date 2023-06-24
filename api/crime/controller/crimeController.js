@@ -26,7 +26,8 @@ exports.createNewCrime = async (req, res, next) => {
           description: `A new crime titled "${crimeTitle}" has been reported in ${crimeCity.charAt(0).toUpperCase() + crimeCity.slice(1).toLowerCase()}. Please stay vigilant.`,
           address: crimeCity.toLowerCase(),
           status: 'unread',
-          userId: user._id
+          userId: user._id,
+          crimeId: newCrime._id  
         });
 
         await notification.save();
@@ -42,8 +43,6 @@ exports.createNewCrime = async (req, res, next) => {
   }
 };
 
-
-
 exports.getNotifications = async (req, res) => {
   try {
     const city = req.params.city;
@@ -57,7 +56,6 @@ exports.getNotifications = async (req, res) => {
       ]
     });
 
-    console.log(notifications);
     res.status(200).json(notifications);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch notifications' });
@@ -72,16 +70,13 @@ exports.markAsRead = async (req, res) => {
     if (!notification) {
       return res.status(404).json({ error: 'Notification not found' });
     }
-
     notification.status = 'read';
     await notification.save();
-
     res.status(200).json({ message: 'Notification marked as read' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to mark notification as read' });
   }
 };
-
 
 exports.getAllCrimes = async (req, res, next) => {
   try {
@@ -94,7 +89,6 @@ exports.getAllCrimes = async (req, res, next) => {
 
 exports.postComment = async (req, res, next) => {
   const { crimeId, commentText, userEmail } = req.body;
-
   const newComment = new Comment({
     crimeId,
     commentText,
@@ -121,26 +115,23 @@ exports.getComments = async (req, res, next) => {
   exports.postReply = async (req, res, next) => {
     const { commentId } = req.params;
     const { userEmail, replyText } = req.body;
-  
     try {
       const comment = await Comment.findById(commentId);
       if (!comment) {
         return res.status(404).json({ error: 'Comment not found' });
       }
-  
       const newReply = {
         userEmail,
         replyText
       };
-  
       comment.replies.push(newReply);
       await comment.save();
-  
       res.status(201).json(comment);
     } catch (error) {
       res.status(500).json({ error: 'Failed to add reply' });
     }
   };
+
   exports.deleteComment = (req, res, next) => {
     Comment.findByIdAndDelete(req.params.id)
       .then(() => {
@@ -164,20 +155,67 @@ exports.getComments = async (req, res, next) => {
         res.status(500).json({ message: 'Failed to delete reply', error });
       });
   };
-  
+
   exports.getReplies = async (req, res, next) => {
     const { commentId } = req.params;
-  
     try {
       const comment = await Comment.findById(commentId);
       if (!comment) {
         return res.status(404).json({ error: 'Comment not found' });
       }
-  
       res.status(200).json(comment.replies);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch replies' });
     }
   };
   
+  exports.deleteCrime = async (req, res, next) => {
+    try {
+      const crimeId = req.params.id;
+      await Comment.deleteMany({ crimeId: crimeId });
+      await Notification.deleteMany({ crimeId: crimeId });
+      await Crime.findByIdAndDelete(crimeId);
+      res.status(200).json({ message: 'Crime deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete crime', error });
+    }
+  };
   
+  exports.updateCrime = async (req, res, next) => {
+  try {
+    const { crimeId } = req.params;
+    const { reporterEmail, crimeTitle, crimeAddress, crimeCity, crimeDesc, crimeDate, crimeLevel } = req.body;
+    const updatedCrime = await Crime.findByIdAndUpdate(
+      crimeId,
+      {
+        reporterEmail,
+        crimeTitle,
+        crimeCity: crimeCity.toLowerCase(),
+        crimeAddress,
+        crimeDesc,
+        crimeDate,
+        crimeLevel,
+      },
+      { new: true }
+    );
+    res.status(200).json(updatedCrime);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update crime', error });
+  }
+};
+
+exports.markCrime = async (req, res) => {
+  try {
+    const crimeId = req.params.id;
+    const crime = await Crime.findById(crimeId);
+    if (!crime) {
+      return res.status(404).json({ error: 'Crime not found' });
+    }
+      console.log(crime);
+    crime.resolved = 'Resolved';
+    await crime.save();
+    res.status(200).json({ message: 'Crime marked as resolved' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark crime as resolved' });
+  }
+};

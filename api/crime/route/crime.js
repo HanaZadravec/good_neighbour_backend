@@ -12,5 +12,6 @@ router.get('/notifications/:city/:userId', crimeController.getNotifications);
 router.put('/notifications/:id', crimeController.markAsRead);
 router.delete('/comments/:id', crimeController.deleteComment);
 router.delete('/comments/:commentId/replies/:replyId', crimeController.deleteReply);
-
+router.delete('/crimes/:id', crimeController.deleteCrime);
+router.put('/markCrime/:id', crimeController.markCrime);
 module.exports = router;

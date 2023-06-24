@@ -14,7 +14,7 @@ exports.registerNewUser = async (req, res, next) => {
     lastname: req.body.lastname,
     password: bcrypt.hashSync(req.body.password, 10),
     email: req.body.email,
-    address: req.body.address,
+    address: req.body.address.toLowerCase(),
     isAdmin: isAdmin
   });
 

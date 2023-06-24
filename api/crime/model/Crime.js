@@ -29,6 +29,11 @@ const crimeSchema = mongoose.Schema({
     type: String,
     enum: ['Low', 'Medium', 'High'], // Dodajte enum za razine (niska, srednja, visoka)
     required: true
+  },
+  resolved:{
+    type: String,
+    enum:['Resolved', 'Not resolved'],
+    default: 'Not resolved'
   }
 });
 
