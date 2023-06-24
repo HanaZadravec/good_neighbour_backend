@@ -2,7 +2,7 @@ const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-exports.registerNewUser = async (req, res, next) => {
+exports.registerNewUser = async (req, res) => {
   console.log(req.body);
   let isAdmin = false;
   if (req.body.email === 'admin@gmail.com') {
@@ -31,8 +31,7 @@ exports.registerNewUser = async (req, res, next) => {
   });
 };
 
-
-exports.loginUser = async (req, res, next) => {
+exports.loginUser = async (req, res) => {
   User.findOne({ email: req.body.email }, (err, user) => {
     if (err) return res.status(500).json({
       title: 'server error',
@@ -60,8 +59,7 @@ exports.loginUser = async (req, res, next) => {
   });
 };
 
-
-exports.getUserDetails = (req, res, next) => {
+exports.getUserDetails = (req, res) => {
   let token = req.headers.token;
   jwt.verify(token, 'secretkey', (err, decoded) => {
     if (err) return res.status(401).json({
