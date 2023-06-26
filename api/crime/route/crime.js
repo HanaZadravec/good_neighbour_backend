@@ -14,4 +14,5 @@ router.delete('/comments/:id', crimeController.deleteComment);
 router.delete('/comments/:commentId/replies/:replyId', crimeController.deleteReply);
 router.delete('/crimes/:id', crimeController.deleteCrime);
 router.put('/markCrime/:id', crimeController.markCrime);
+
 module.exports = router;
